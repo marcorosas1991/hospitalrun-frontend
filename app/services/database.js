@@ -1,6 +1,7 @@
 import Ember from 'ember';
 import createPouchViews from 'hospitalrun/utils/pouch-views';
 import List from 'npm:pouchdb-list';
+import PouchAdapterMemory from 'npm:pouchdb-adapter-memory';
 import PouchAdapterUtils from 'hospitalrun/mixins/pouch-adapter-utils';
 
 export default Ember.Service.extend(PouchAdapterUtils, {
@@ -107,6 +108,24 @@ export default Ember.Service.extend(PouchAdapterUtils, {
     });
   },
 
+ /**
+  * Given an record type, return back the maximum pouchdb id.  Useful for endkeys.
+  * @param {String} type the record type.
+  * @returns {String} the max pouch id for the type.
+  */
+  getMaxPouchId(type) {
+    return this.getPouchId({}, type);
+  },
+
+  /**
+  * Given an record type, return back the minimum pouchdb id.  Useful for startkeys.
+  * @param {String} type the record type.
+  * @returns {String} the min pouch id for the type.
+  */
+  getMinPouchId(type) {
+    return this.getPouchId(null, type);
+  },
+
   /**
   * Given an Ember record id and type, return back the corresponding pouchDB id.
   * @param {String} emberId the ember record id.
@@ -127,6 +146,7 @@ export default Ember.Service.extend(PouchAdapterUtils, {
    */
   loadDBFromDump(dbDump) {
     return new Ember.RSVP.Promise((resolve, reject) => {
+      PouchDB.plugin(PouchAdapterMemory);
       let db = new PouchDB('dbdump', {
         adapter: 'memory'
       });
